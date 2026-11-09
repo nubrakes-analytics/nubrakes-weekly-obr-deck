@@ -1,0 +1,906 @@
+<title>NuBrakes Operations Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root {
+  --navy:#00316D; --blue:#078BC7; --red:#E51C24; --green:#1B7F4B;
+  --ground:#F2F5F8; --surface:#FFFFFF; --raise:#E8EEF4;
+  --ink:#141A21; --muted:#5A6874; --rule:#D8E0E8;
+  --spark-fill:rgba(7,139,199,.14); --spark-line:#078BC7;
+  --sans:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0C131B; --surface:#141E29; --raise:#1D2A38;
+    --ink:#E6EDF4; --muted:#93A3B4; --rule:#26374A;
+    --blue:#3BA9E0; --green:#3FB57A; --red:#FF6B6F;
+    --spark-fill:rgba(59,169,224,.16); --spark-line:#3BA9E0;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#0C131B; --surface:#141E29; --raise:#1D2A38;
+  --ink:#E6EDF4; --muted:#93A3B4; --rule:#26374A;
+  --blue:#3BA9E0; --green:#3FB57A; --red:#FF6B6F;
+  --spark-fill:rgba(59,169,224,.16); --spark-line:#3BA9E0;
+}
+* { box-sizing:border-box; }
+body { background:var(--ground); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.5; }
+.wrap { max-width:1180px; margin:0 auto; padding-inline:18px; padding-block:0 56px; }
+header.top { position:sticky; top:env(safe-area-inset-top,0px); z-index:20;
+  background:var(--navy); color:#fff; padding:14px 18px;
+  display:flex; align-items:center; gap:10px 16px; flex-wrap:wrap; }
+header.top h1 { font-size:17px; font-weight:600; margin:0; letter-spacing:-.01em; }
+header.top .wkline { font-family:var(--mono); font-size:12px; opacity:.82; }
+header.top .sp { flex:1 1 auto; }
+#dl { font:600 13px var(--sans); color:var(--navy); background:#fff;
+  border-radius:6px; padding:9px 15px; text-decoration:none; display:inline-block; }
+#dl:hover { background:#DCE8F4; }
+.deckbox { display:flex; flex-direction:column; gap:14px; }
+.slide { margin:0; background:#fff; border:1px solid var(--rule); border-radius:10px;
+  overflow:hidden; position:relative; }
+.slide img { display:block; width:100%; height:auto; }
+.slide figcaption { position:absolute; right:8px; bottom:6px;
+  font:600 10px var(--mono); color:#8A97A5; background:rgba(255,255,255,.86);
+  border-radius:4px; padding:2px 6px; }
+.decknote { font-size:11.5px; color:var(--muted); margin:10px 0 0; }
+.decknote code { font-family:var(--mono); font-size:11px; }
+h2 { font-size:13px; text-transform:uppercase; letter-spacing:.07em;
+  color:var(--muted); font-weight:600; margin:34px 0 12px; }
+.owner { color:var(--blue); }
+.sep { color:var(--rule); }
+.kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:12px; }
+.kpi { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+  padding:14px 15px 10px; }
+.kpi-label { font-size:11px; text-transform:uppercase; letter-spacing:.06em;
+  color:var(--muted); font-weight:600; }
+.kpi-value { font:600 27px/1.15 var(--sans); font-variant-numeric:tabular-nums;
+  color:var(--navy); margin-top:5px; }
+:root[data-theme="dark"] .kpi-value, :root:not([data-theme="light"]) .kpi-value { color:var(--ink); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .kpi-value { color:var(--navy); } }
+.kpi-delta { font:600 13px var(--mono); margin-top:3px; }
+.kpi-foot { font-size:11.5px; color:var(--muted); margin-top:2px; }
+.up { color:var(--green); } .down { color:var(--red); } .flat { color:var(--muted); }
+.c-up { color:var(--green); } .c-down { color:var(--red); } .b { font-weight:600; }
+.spark { display:block; width:100%; height:34px; margin-top:8px; }
+.pace { }
+.months { display:flex; gap:10px; align-items:flex-end; background:var(--surface);
+  border:1px solid var(--rule); border-radius:10px; padding:16px 15px 12px;
+  overflow-x:auto; }
+.mo { flex:1 0 62px; display:flex; flex-direction:column; align-items:center; gap:6px; }
+.bar-wrap { height:104px; width:100%; display:flex; align-items:flex-end;
+  justify-content:center; position:relative; }
+.bar { width:78%; background:var(--blue); border-radius:3px 3px 0 0; }
+.mo.partial .bar.pace { position:absolute; bottom:0; background:transparent;
+  border:1.5px dashed var(--navy); }
+:root[data-theme="dark"] .mo.partial .bar.pace { border-color:var(--blue); }
+.mo.partial .bar.mtd { background:var(--navy); position:relative; }
+:root[data-theme="dark"] .mo.partial .bar.mtd { background:var(--blue); }
+.mo-v { font:600 12px var(--mono); font-variant-numeric:tabular-nums; }
+.mo-l { font-size:11px; color:var(--muted); text-align:center; }
+.flag { background:var(--raise); border-left:3px solid var(--navy); border-radius:0 6px 6px 0;
+  padding:9px 13px; font-size:13.5px; margin:14px 0 0; }
+ul.callouts { list-style:none; margin:12px 0 0; padding:0; display:grid; gap:7px; }
+ul.callouts li { background:var(--surface); border:1px solid var(--rule);
+  border-radius:8px; padding:10px 13px; font-size:13.5px; }
+.scroll { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:13px; }
+thead th { background:var(--navy); color:#fff; font-weight:600; font-size:11px;
+  text-transform:uppercase; letter-spacing:.04em; padding:8px 9px; text-align:right;
+  white-space:nowrap; }
+thead th:first-child { text-align:left; }
+tbody th { text-align:left; font-weight:600; padding:7px 9px; white-space:nowrap; }
+td.n { text-align:right; padding:7px 9px; font-family:var(--mono);
+  font-variant-numeric:tabular-nums; white-space:nowrap; }
+tbody tr { border-bottom:1px solid var(--rule); }
+tbody tr.tot { background:var(--raise); font-weight:600; }
+tbody tr.tot td.n { font-weight:600; }
+.card { background:var(--surface); border:1px solid var(--rule); border-radius:10px;
+  overflow:hidden; }
+.card.scroll { overflow:hidden; overflow-x:auto; }
+details.market { background:var(--surface); border:1px solid var(--rule);
+  border-radius:10px; margin-bottom:8px; }
+details.market summary { cursor:pointer; padding:12px 15px; display:flex;
+  align-items:baseline; gap:12px; list-style:none; }
+details.market summary::-webkit-details-marker { display:none; }
+details.market summary::before { content:"\25B8"; color:var(--muted); font-size:11px;
+  transition:transform .15s; }
+details.market[open] summary::before { transform:rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { details.market summary::before { transition:none; } }
+.m-name { font-weight:600; flex:1 1 auto; }
+.m-rev, .m-wow { font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:13px; }
+.m-body { padding:0 15px 15px; }
+.m-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr));
+  gap:9px; margin-bottom:13px; }
+.m-stats div { background:var(--raise); border-radius:7px; padding:8px 10px; }
+.m-stats span { display:block; font-size:10.5px; text-transform:uppercase;
+  letter-spacing:.05em; color:var(--muted); font-weight:600; }
+.m-stats b { font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:15px; }
+.mk { font-size:11px; } .mk.up { color:var(--green); } .mk.down { color:var(--red); }
+ul.reasons { list-style:none; margin:11px 0 0; padding:0; display:grid; gap:4px;
+  font-size:12.5px; color:var(--muted); }
+footer { margin-top:40px; padding-top:16px; border-top:1px solid var(--rule);
+  font-size:12px; color:var(--muted); }
+footer code { font-family:var(--mono); font-size:11.5px; }
+@media (max-width:620px) {
+  .months { gap:5px; padding:13px 10px 10px; }
+  .mo-v { font-size:10.5px; } .mo-l { font-size:9.5px; }
+  .bar-wrap { height:78px; }
+  header.top h1 { font-size:15px; }
+}
+</style>
+
+<header class="top">
+  <h1>NuBrakes Operations Review</h1>
+  <div class="wkline">Week Oct 29–Nov 4 · Thu–Wed</div>
+  <div class="sp"></div>
+  <a id="dl" href="#deck">View the deck</a>
+</header>
+
+<div class="wrap">
+  <h2>Company</h2>
+  <div class="kpis"><div class="kpi">
+      <div class="kpi-label">Net revenue</div>
+      <div class="kpi-value">$210,454</div>
+      <div class="kpi-delta down">-2.1% WoW</div>
+      <div class="kpi-foot">8-week norm $203,920</div>
+      <svg class="spark" viewBox="0 0 132 34" width="132" height="34" role="img" aria-hidden="true" preserveAspectRatio="none"><polygon points="4.0,34 4.0,17.3 14.3,4.0 24.7,7.4 35.0,13.7 45.3,30.0 55.7,18.5 66.0,17.1 76.3,13.0 86.7,18.8 97.0,10.2 107.3,17.9 117.7,13.9 128.0,15.4 128.0,34" fill="var(--spark-fill)"/><polyline points="4.0,17.3 14.3,4.0 24.7,7.4 35.0,13.7 45.3,30.0 55.7,18.5 66.0,17.1 76.3,13.0 86.7,18.8 97.0,10.2 107.3,17.9 117.7,13.9 128.0,15.4" fill="none" stroke="var(--spark-line)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><polyline points="117.7,13.9 128.0,15.4" fill="none" stroke="#E51C24" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+    </div><div class="kpi">
+      <div class="kpi-label">Average ticket</div>
+      <div class="kpi-value">$513</div>
+      <div class="kpi-delta up">+5.5% WoW</div>
+      <div class="kpi-foot">8-week norm $502</div>
+      <svg class="spark" viewBox="0 0 132 34" width="132" height="34" role="img" aria-hidden="true" preserveAspectRatio="none"><polygon points="4.0,34 4.0,26.2 14.3,11.9 24.7,11.3 35.0,23.2 45.3,26.0 55.7,11.3 66.0,17.9 76.3,15.4 86.7,4.0 97.0,13.9 107.3,30.0 117.7,26.4 128.0,11.9 128.0,34" fill="var(--spark-fill)"/><polyline points="4.0,26.2 14.3,11.9 24.7,11.3 35.0,23.2 45.3,26.0 55.7,11.3 66.0,17.9 76.3,15.4 86.7,4.0 97.0,13.9 107.3,30.0 117.7,26.4 128.0,11.9" fill="none" stroke="var(--spark-line)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><polyline points="117.7,26.4 128.0,11.9" fill="none" stroke="#1B7F4B" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+    </div><div class="kpi">
+      <div class="kpi-label">Rev jobs / tech day</div>
+      <div class="kpi-value">3.18</div>
+      <div class="kpi-delta down">-3.6% WoW</div>
+      <div class="kpi-foot">27 techs · 129 tech days</div>
+      <svg class="spark" viewBox="0 0 132 34" width="132" height="34" role="img" aria-hidden="true" preserveAspectRatio="none"><polygon points="4.0,34 4.0,27.2 14.3,4.0 24.7,18.3 35.0,15.8 45.3,24.5 55.7,20.8 66.0,30.0 76.3,29.5 86.7,27.0 97.0,7.8 107.3,15.9 117.7,9.3 128.0,17.1 128.0,34" fill="var(--spark-fill)"/><polyline points="4.0,27.2 14.3,4.0 24.7,18.3 35.0,15.8 45.3,24.5 55.7,20.8 66.0,30.0 76.3,29.5 86.7,27.0 97.0,7.8 107.3,15.9 117.7,9.3 128.0,17.1" fill="none" stroke="var(--spark-line)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><polyline points="117.7,9.3 128.0,17.1" fill="none" stroke="#E51C24" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+    </div><div class="kpi">
+      <div class="kpi-label">Service call rate</div>
+      <div class="kpi-value">5.5%</div>
+      <div class="kpi-delta up">-20.4% WoW</div>
+      <div class="kpi-foot">8-week norm 6.6%</div>
+      <svg class="spark" viewBox="0 0 132 34" width="132" height="34" role="img" aria-hidden="true" preserveAspectRatio="none"><polygon points="4.0,34 4.0,16.6 14.3,23.0 24.7,28.2 35.0,6.7 45.3,30.0 55.7,12.8 66.0,4.0 76.3,25.6 86.7,28.7 97.0,25.5 107.3,15.3 117.7,17.6 128.0,28.5 128.0,34" fill="var(--spark-fill)"/><polyline points="4.0,16.6 14.3,23.0 24.7,28.2 35.0,6.7 45.3,30.0 55.7,12.8 66.0,4.0 76.3,25.6 86.7,28.7 97.0,25.5 107.3,15.3 117.7,17.6 128.0,28.5" fill="none" stroke="var(--spark-line)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><polyline points="117.7,17.6 128.0,28.5" fill="none" stroke="#1B7F4B" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>
+    </div><div class="kpi">
+      <div class="kpi-label">Technician efficiency</div>
+      <div class="kpi-value">63%</div>
+      <div class="kpi-delta flat"></div>
+      <div class="kpi-foot">2,942 invoiced ÷ 4,672 clocked hours</div>
+      
+    </div></div>
+
+  <h2>Month to date</h2>
+  <div class="months"><div class="mo"><div class="bar-wrap"><div class="bar" style="height:100.0%"></div></div><div class="mo-v">$1,012k</div><div class="mo-l">May</div></div><div class="mo"><div class="bar-wrap"><div class="bar" style="height:95.8%"></div></div><div class="mo-v">$969k</div><div class="mo-l">Jun</div></div><div class="mo"><div class="bar-wrap"><div class="bar" style="height:92.1%"></div></div><div class="mo-v">$933k</div><div class="mo-l">Jul</div></div><div class="mo"><div class="bar-wrap"><div class="bar" style="height:96.4%"></div></div><div class="mo-v">$976k</div><div class="mo-l">Aug</div></div><div class="mo"><div class="bar-wrap"><div class="bar" style="height:84.7%"></div></div><div class="mo-v">$857k</div><div class="mo-l">Sep</div></div><div class="mo"><div class="bar-wrap"><div class="bar" style="height:93.6%"></div></div><div class="mo-v">$948k</div><div class="mo-l">Oct</div></div><div class="mo partial"><div class="bar-wrap"><div class="bar pace" style="height:79.0%"></div><div class="bar mtd" style="height:10.5%"></div></div><div class="mo-v">$800k</div><div class="mo-l">Nov pace</div></div></div>
+
+  <h2>What changed</h2>
+  <ul class="callouts"><li><span class="b">Revenue bridge: </span>-2.1% week over week splits -$8,021 capacity (-5 tech days) and $3,512 productivity ($1,631/day vs $1,604). Capacity is the larger driver.</li><li><span class="b">Month pace: </span>$106,649 through day 4 of 30 paces to $799,865, -15.6% against Oct at $947,542. Straight-line pace — no LE loaded.</li><li><span class="b">Miami: </span><span class="c-up">average ticket up 67% — $877 vs $524.</span></li><li><span class="b">Austin: </span><span class="c-up">average ticket up 23% — $691 vs $561.</span></li></ul>
+
+  <h2>Markets</h2>
+  <div class="card scroll"><table>
+    <thead><tr><th>Market</th><th>Revenue</th><th>WoW</th><th>Ticket</th>
+      <th>Compl.</th><th>Jobs/day</th><th>Svc call</th>
+      <th>Nov pace</th></tr></thead>
+    <tbody><tr>
+          <th scope="row">Dallas</th>
+          <td class="n">$51,832</td>
+          <td class="n up">+15%</td>
+          <td class="n">$503</td>
+          <td class="n">111%</td>
+          <td class="n">3.43</td>
+          <td class="n">7.2%</td>
+          <td class="n up">+5%</td></tr><tr>
+          <th scope="row">Atlanta</th>
+          <td class="n">$37,188</td>
+          <td class="n up">+15%</td>
+          <td class="n">$496</td>
+          <td class="n">118%</td>
+          <td class="n">3.75</td>
+          <td class="n">5.1%</td>
+          <td class="n down">-5%</td></tr><tr>
+          <th scope="row">Houston</th>
+          <td class="n">$32,689</td>
+          <td class="n down">-1%</td>
+          <td class="n">$503</td>
+          <td class="n">130%</td>
+          <td class="n">3.61</td>
+          <td class="n">3.0%</td>
+          <td class="n down">-5%</td></tr><tr>
+          <th scope="row">Nashville</th>
+          <td class="n">$27,422</td>
+          <td class="n down">-7%</td>
+          <td class="n">$473</td>
+          <td class="n">129%</td>
+          <td class="n">3.05</td>
+          <td class="n">4.9%</td>
+          <td class="n down">-30%</td></tr><tr>
+          <th scope="row">Austin</th>
+          <td class="n">$25,557</td>
+          <td class="n down">-2%</td>
+          <td class="n">$691</td>
+          <td class="n">148%</td>
+          <td class="n">3.08</td>
+          <td class="n">2.6%</td>
+          <td class="n down">-43%</td></tr><tr>
+          <th scope="row">San Antonio</th>
+          <td class="n">$11,717</td>
+          <td class="n down">-34%</td>
+          <td class="n">$451</td>
+          <td class="n">95%</td>
+          <td class="n">2.17</td>
+          <td class="n">7.1%</td>
+          <td class="n down">-23%</td></tr><tr>
+          <th scope="row">Orlando</th>
+          <td class="n">$8,448</td>
+          <td class="n down">-3%</td>
+          <td class="n">$497</td>
+          <td class="n">145%</td>
+          <td class="n">3.40</td>
+          <td class="n">15.0%</td>
+          <td class="n down">-26%</td></tr><tr>
+          <th scope="row">Miami</th>
+          <td class="n">$7,019</td>
+          <td class="n up">+13%</td>
+          <td class="n">$877</td>
+          <td class="n">253%</td>
+          <td class="n">2.00</td>
+          <td class="n">0.0%</td>
+          <td class="n up">+25%</td></tr><tr>
+          <th scope="row">Louisville</th>
+          <td class="n">$5,164</td>
+          <td class="n down">-51%</td>
+          <td class="n">$397</td>
+          <td class="n">143%</td>
+          <td class="n">2.60</td>
+          <td class="n">7.1%</td>
+          <td class="n down">-8%</td></tr><tr>
+          <th scope="row">Tampa</th>
+          <td class="n">$3,417</td>
+          <td class="n down">-40%</td>
+          <td class="n">$427</td>
+          <td class="n">114%</td>
+          <td class="n">2.00</td>
+          <td class="n">0.0%</td>
+          <td class="n down">-82%</td></tr><tr class="tot">
+      <th scope="row">Total</th>
+      <td class="n">$210,454</td>
+      <td class="n down">-2%</td>
+      <td class="n">$513</td>
+      <td class="n">124%</td>
+      <td class="n">3.18</td>
+      <td class="n">5.5%</td>
+      <td class="n down">-16%</td></tr></tbody></table></div>
+
+  <section class="region">
+          <h2>Texas <span class="sep">·</span> <span class="owner">Bob</span></h2>
+          <details class="market">
+              <summary>
+                <span class="m-name">Dallas</span>
+                <span class="m-rev">$51,832</span>
+                <span class="m-wow up">+15%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$503</b></div>
+                  <div><span>Completion</span><b>111%</b></div>
+                  <div><span>Jobs/tech day</span><b>3.43</b></div>
+                  <div><span>Service call</span><b>7.2%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row">Michael Herring</th>
+                  <td class="n">21</td>
+                  <td class="n">$42,051</td>
+                  <td class="n">3.6</td>
+                  <td class="n">$454</td>
+                  <td class="n">$553</td>
+                  <td class="n">122%</td>
+                  <td class="n">0.0%</td>
+                  <td class="n">67%</td>
+                  <td class="n">86%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Dustin Morgan</th>
+                  <td class="n">20</td>
+                  <td class="n">$33,990</td>
+                  <td class="n">3.7</td>
+                  <td class="n">$482</td>
+                  <td class="n">$459</td>
+                  <td class="n">95%</td>
+                  <td class="n">9.8%</td>
+                  <td class="n">57%</td>
+                  <td class="n">68%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Jesse Berrones</th>
+                  <td class="n">21</td>
+                  <td class="n">$29,835</td>
+                  <td class="n">3.2</td>
+                  <td class="n">$412</td>
+                  <td class="n">$445</td>
+                  <td class="n">108%</td>
+                  <td class="n">13.0%</td>
+                  <td class="n">48%</td>
+                  <td class="n">61%</td></tr><tr>
+                  <th scope="row">Pablo Chavez</th>
+                  <td class="n">18</td>
+                  <td class="n">$28,834</td>
+                  <td class="n">3.4</td>
+                  <td class="n">$440</td>
+                  <td class="n">$465</td>
+                  <td class="n">106%</td>
+                  <td class="n">1.6%</td>
+                  <td class="n">61%</td>
+                  <td class="n">62%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Eddie Catalan</th>
+                  <td class="n">19</td>
+                  <td class="n">$28,338</td>
+                  <td class="n">3.8</td>
+                  <td class="n">$324</td>
+                  <td class="n">$388</td>
+                  <td class="n">120%</td>
+                  <td class="n">9.9%</td>
+                  <td class="n">55%</td>
+                  <td class="n">69%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Jiovanny Perez</th>
+                  <td class="n">19</td>
+                  <td class="n">$27,354</td>
+                  <td class="n">3.2</td>
+                  <td class="n">$426</td>
+                  <td class="n">$448</td>
+                  <td class="n">105%</td>
+                  <td class="n">14.1%</td>
+                  <td class="n">59%</td>
+                  <td class="n">52%</td></tr><tr>
+                  <th scope="row"><span class="mk up">▲</span> Marcus Thompson</th>
+                  <td class="n">3</td>
+                  <td class="n">$6,876</td>
+                  <td class="n">3.7</td>
+                  <td class="n">$585</td>
+                  <td class="n">$625</td>
+                  <td class="n">107%</td>
+                  <td class="n">0.0%</td>
+                  <td class="n">73%</td>
+                  <td class="n">67%</td></tr><tr class="tot">
+                  <th scope="row">Dallas overall</th>
+                  <td class="n">121</td>
+                  <td class="n">$197,278</td>
+                  <td class="n">3.5</td>
+                  <td class="n">$427</td>
+                  <td class="n">$465</td>
+                  <td class="n">109%</td>
+                  <td class="n">8.0%</td>
+                  <td class="n">58%</td>
+                  <td class="n">67%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><span class="mk down">▼</span> <b>Dustin Morgan</b> — ticket $459 vs own $542 (-15%)</li><li><span class="mk down">▼</span> <b>Jesse Berrones</b> — ticket $445 vs own $528 (-16%)</li><li><span class="mk down">▼</span> <b>Eddie Catalan</b> — ticket $388 vs own $472 (-18%)</li><li><span class="mk down">▼</span> <b>Jiovanny Perez</b> — ticket $448 vs own $522 (-14%)</li><li><span class="mk up">▲</span> <b>Marcus Thompson</b> — ticket $625 vs own $436 (+44%); service call 0.0% vs own 8.5% (-8.5pp)</li><li><b>PTO in window</b> — Pablo Chavez 10h, Eddie Catalan 8h, Jiovanny Perez 8h.</li></ul>
+              </div></details><details class="market">
+              <summary>
+                <span class="m-name">Houston</span>
+                <span class="m-rev">$32,689</span>
+                <span class="m-wow down">-1%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$503</b></div>
+                  <div><span>Completion</span><b>130%</b></div>
+                  <div><span>Jobs/tech day</span><b>3.61</b></div>
+                  <div><span>Service call</span><b>3.0%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row">Tommy Moore</th>
+                  <td class="n">24</td>
+                  <td class="n">$46,717</td>
+                  <td class="n">3.8</td>
+                  <td class="n">$416</td>
+                  <td class="n">$513</td>
+                  <td class="n">123%</td>
+                  <td class="n">5.2%</td>
+                  <td class="n">69%</td>
+                  <td class="n">70%</td></tr><tr>
+                  <th scope="row"><span class="mk up">▲</span> Jaden Thagard</th>
+                  <td class="n">24</td>
+                  <td class="n">$43,613</td>
+                  <td class="n">3.4</td>
+                  <td class="n">$416</td>
+                  <td class="n">$538</td>
+                  <td class="n">130%</td>
+                  <td class="n">1.2%</td>
+                  <td class="n">70%</td>
+                  <td class="n">68%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Edgar Khachaturyan</th>
+                  <td class="n">22</td>
+                  <td class="n">$40,600</td>
+                  <td class="n">4.1</td>
+                  <td class="n">$379</td>
+                  <td class="n">$446</td>
+                  <td class="n">118%</td>
+                  <td class="n">2.2%</td>
+                  <td class="n">57%</td>
+                  <td class="n">83%</td></tr><tr>
+                  <th scope="row"><span class="mk up">▲</span> Sergio Nieto</th>
+                  <td class="n">3</td>
+                  <td class="n">$2,822</td>
+                  <td class="n">1.7</td>
+                  <td class="n">$445</td>
+                  <td class="n">$564</td>
+                  <td class="n">127%</td>
+                  <td class="n">0.0%</td>
+                  <td class="n">40%</td>
+                  <td class="n">58%</td></tr><tr class="tot">
+                  <th scope="row">Houston overall</th>
+                  <td class="n">73</td>
+                  <td class="n">$133,751</td>
+                  <td class="n">3.7</td>
+                  <td class="n">$404</td>
+                  <td class="n">$499</td>
+                  <td class="n">124%</td>
+                  <td class="n">2.9%</td>
+                  <td class="n">65%</td>
+                  <td class="n">73%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><span class="mk up">▲</span> <b>Jaden Thagard</b> — service call 1.2% vs own 8.3% (-7.0pp)</li><li><span class="mk down">▼</span> <b>Edgar Khachaturyan</b> — ticket $446 vs own $536 (-17%)</li><li><span class="mk up">▲</span> <b>Sergio Nieto</b> — ticket $564 vs own $454 (+24%); service call 0.0% vs own 15.0% (-15.0pp)</li><li><b>PTO in window</b> — Edgar Khachaturyan 16h.</li></ul>
+              </div></details><details class="market">
+              <summary>
+                <span class="m-name">Austin</span>
+                <span class="m-rev">$25,557</span>
+                <span class="m-wow down">-2%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$691</b></div>
+                  <div><span>Completion</span><b>148%</b></div>
+                  <div><span>Jobs/tech day</span><b>3.08</b></div>
+                  <div><span>Service call</span><b>2.6%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row">Richard Forcey</th>
+                  <td class="n">20</td>
+                  <td class="n">$39,250</td>
+                  <td class="n">3.4</td>
+                  <td class="n">$494</td>
+                  <td class="n">$586</td>
+                  <td class="n">119%</td>
+                  <td class="n">6.9%</td>
+                  <td class="n">76%</td>
+                  <td class="n">65%</td></tr><tr>
+                  <th scope="row">Przemyslaw Sadowski</th>
+                  <td class="n">19</td>
+                  <td class="n">$37,535</td>
+                  <td class="n">2.8</td>
+                  <td class="n">$476</td>
+                  <td class="n">$695</td>
+                  <td class="n">146%</td>
+                  <td class="n">1.8%</td>
+                  <td class="n">87%</td>
+                  <td class="n">65%</td></tr><tr>
+                  <th scope="row">Mario Gonzalez</th>
+                  <td class="n">16</td>
+                  <td class="n">$30,065</td>
+                  <td class="n">3.2</td>
+                  <td class="n">$491</td>
+                  <td class="n">$590</td>
+                  <td class="n">120%</td>
+                  <td class="n">3.8%</td>
+                  <td class="n">73%</td>
+                  <td class="n">66%</td></tr><tr>
+                  <th scope="row">Kevin Camacho</th>
+                  <td class="n">10</td>
+                  <td class="n">$11,796</td>
+                  <td class="n">2.7</td>
+                  <td class="n">$402</td>
+                  <td class="n">$437</td>
+                  <td class="n">109%</td>
+                  <td class="n">15.6%</td>
+                  <td class="n">59%</td>
+                  <td class="n">35%</td></tr><tr class="tot">
+                  <th scope="row">Austin overall</th>
+                  <td class="n">65</td>
+                  <td class="n">$118,647</td>
+                  <td class="n">3.1</td>
+                  <td class="n">$476</td>
+                  <td class="n">$596</td>
+                  <td class="n">125%</td>
+                  <td class="n">6.1%</td>
+                  <td class="n">76%</td>
+                  <td class="n">60%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><b>PTO in window</b> — Mario Gonzalez 32h, Przemyslaw Sadowski 8h.</li></ul>
+              </div></details><details class="market">
+              <summary>
+                <span class="m-name">San Antonio</span>
+                <span class="m-rev">$11,717</span>
+                <span class="m-wow down">-34%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$451</b></div>
+                  <div><span>Completion</span><b>95%</b></div>
+                  <div><span>Jobs/tech day</span><b>2.17</b></div>
+                  <div><span>Service call</span><b>7.1%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row">Joseph Gonzalez</th>
+                  <td class="n">19</td>
+                  <td class="n">$31,282</td>
+                  <td class="n">3.5</td>
+                  <td class="n">$427</td>
+                  <td class="n">$474</td>
+                  <td class="n">111%</td>
+                  <td class="n">4.3%</td>
+                  <td class="n">52%</td>
+                  <td class="n">65%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Scott Andrews</th>
+                  <td class="n">16</td>
+                  <td class="n">$17,103</td>
+                  <td class="n">2.2</td>
+                  <td class="n">$448</td>
+                  <td class="n">$489</td>
+                  <td class="n">109%</td>
+                  <td class="n">10.3%</td>
+                  <td class="n">54%</td>
+                  <td class="n">45%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Lee Bradley</th>
+                  <td class="n">6</td>
+                  <td class="n">$9,098</td>
+                  <td class="n">3.2</td>
+                  <td class="n">$531</td>
+                  <td class="n">$479</td>
+                  <td class="n">90%</td>
+                  <td class="n">9.5%</td>
+                  <td class="n">74%</td>
+                  <td class="n">66%</td></tr><tr class="tot">
+                  <th scope="row">San Antonio overall</th>
+                  <td class="n">41</td>
+                  <td class="n">$57,483</td>
+                  <td class="n">2.9</td>
+                  <td class="n">$449</td>
+                  <td class="n">$479</td>
+                  <td class="n">107%</td>
+                  <td class="n">7.0%</td>
+                  <td class="n">56%</td>
+                  <td class="n">57%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><span class="mk down">▼</span> <b>Scott Andrews</b> — service call 10.3% vs own 4.3% (+6.0pp)</li><li><span class="mk down">▼</span> <b>Lee Bradley</b> — service call 9.5% vs own 2.9% (+6.7pp)</li><li><b>PTO in window</b> — Joseph Gonzalez 6h.</li></ul>
+              </div></details></section><section class="region">
+          <h2>East <span class="sep">·</span> <span class="owner">Patrick</span></h2>
+          <details class="market">
+              <summary>
+                <span class="m-name">Atlanta</span>
+                <span class="m-rev">$37,188</span>
+                <span class="m-wow up">+15%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$496</b></div>
+                  <div><span>Completion</span><b>118%</b></div>
+                  <div><span>Jobs/tech day</span><b>3.75</b></div>
+                  <div><span>Service call</span><b>5.1%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row">Josh Horowitz</th>
+                  <td class="n">24</td>
+                  <td class="n">$47,711</td>
+                  <td class="n">4.2</td>
+                  <td class="n">$429</td>
+                  <td class="n">$477</td>
+                  <td class="n">111%</td>
+                  <td class="n">4.8%</td>
+                  <td class="n">73%</td>
+                  <td class="n">83%</td></tr><tr>
+                  <th scope="row">Jay Johnson</th>
+                  <td class="n">20</td>
+                  <td class="n">$39,442</td>
+                  <td class="n">3.9</td>
+                  <td class="n">$435</td>
+                  <td class="n">$512</td>
+                  <td class="n">118%</td>
+                  <td class="n">3.8%</td>
+                  <td class="n">65%</td>
+                  <td class="n">66%</td></tr><tr>
+                  <th scope="row">Dominique Simpson</th>
+                  <td class="n">19</td>
+                  <td class="n">$35,421</td>
+                  <td class="n">3.8</td>
+                  <td class="n">$482</td>
+                  <td class="n">$492</td>
+                  <td class="n">102%</td>
+                  <td class="n">7.7%</td>
+                  <td class="n">58%</td>
+                  <td class="n">63%</td></tr><tr>
+                  <th scope="row">Jerrik Jordan</th>
+                  <td class="n">20</td>
+                  <td class="n">$25,771</td>
+                  <td class="n">2.9</td>
+                  <td class="n">$418</td>
+                  <td class="n">$452</td>
+                  <td class="n">108%</td>
+                  <td class="n">1.7%</td>
+                  <td class="n">60%</td>
+                  <td class="n">54%</td></tr><tr class="tot">
+                  <th scope="row">Atlanta overall</th>
+                  <td class="n">83</td>
+                  <td class="n">$148,345</td>
+                  <td class="n">3.7</td>
+                  <td class="n">$441</td>
+                  <td class="n">$485</td>
+                  <td class="n">110%</td>
+                  <td class="n">4.7%</td>
+                  <td class="n">65%</td>
+                  <td class="n">67%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><b>PTO in window</b> — Dominique Simpson 8h.</li></ul>
+              </div></details><details class="market">
+              <summary>
+                <span class="m-name">Nashville</span>
+                <span class="m-rev">$27,422</span>
+                <span class="m-wow down">-7%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$473</b></div>
+                  <div><span>Completion</span><b>129%</b></div>
+                  <div><span>Jobs/tech day</span><b>3.05</b></div>
+                  <div><span>Service call</span><b>4.9%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row"><span class="mk down">▼</span> Kemper Stanley</th>
+                  <td class="n">21</td>
+                  <td class="n">$30,229</td>
+                  <td class="n">3.0</td>
+                  <td class="n">$377</td>
+                  <td class="n">$472</td>
+                  <td class="n">125%</td>
+                  <td class="n">11.1%</td>
+                  <td class="n">56%</td>
+                  <td class="n">60%</td></tr><tr>
+                  <th scope="row">Austin Lane</th>
+                  <td class="n">20</td>
+                  <td class="n">$29,724</td>
+                  <td class="n">2.9</td>
+                  <td class="n">$364</td>
+                  <td class="n">$512</td>
+                  <td class="n">141%</td>
+                  <td class="n">3.3%</td>
+                  <td class="n">76%</td>
+                  <td class="n">74%</td></tr><tr>
+                  <th scope="row">Mike Nethken</th>
+                  <td class="n">20</td>
+                  <td class="n">$27,844</td>
+                  <td class="n">3.0</td>
+                  <td class="n">$391</td>
+                  <td class="n">$472</td>
+                  <td class="n">121%</td>
+                  <td class="n">6.3%</td>
+                  <td class="n">66%</td>
+                  <td class="n">61%</td></tr><tr>
+                  <th scope="row">Clint Hyde</th>
+                  <td class="n">10</td>
+                  <td class="n">$15,977</td>
+                  <td class="n">3.5</td>
+                  <td class="n">$463</td>
+                  <td class="n">$456</td>
+                  <td class="n">99%</td>
+                  <td class="n">10.3%</td>
+                  <td class="n">66%</td>
+                  <td class="n">71%</td></tr><tr class="tot">
+                  <th scope="row">Nashville overall</th>
+                  <td class="n">71</td>
+                  <td class="n">$103,774</td>
+                  <td class="n">3.0</td>
+                  <td class="n">$391</td>
+                  <td class="n">$480</td>
+                  <td class="n">123%</td>
+                  <td class="n">7.7%</td>
+                  <td class="n">66%</td>
+                  <td class="n">66%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><span class="mk down">▼</span> <b>Kemper Stanley</b> — ticket $472 vs own $538 (-12%); service call 11.1% vs own 5.6% (+5.5pp)</li><li><b>PTO in window</b> — Clint Hyde 48h.</li></ul>
+              </div></details><details class="market">
+              <summary>
+                <span class="m-name">Orlando</span>
+                <span class="m-rev">$8,448</span>
+                <span class="m-wow down">-3%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$497</b></div>
+                  <div><span>Completion</span><b>145%</b></div>
+                  <div><span>Jobs/tech day</span><b>3.40</b></div>
+                  <div><span>Service call</span><b>15.0%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row">Dillan Thompson</th>
+                  <td class="n">12</td>
+                  <td class="n">$20,950</td>
+                  <td class="n">3.2</td>
+                  <td class="n">$385</td>
+                  <td class="n">$537</td>
+                  <td class="n">140%</td>
+                  <td class="n">11.4%</td>
+                  <td class="n">74%</td>
+                  <td class="n">51%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Marvin Cisneros</th>
+                  <td class="n">4</td>
+                  <td class="n">$3,882</td>
+                  <td class="n">2.2</td>
+                  <td class="n">$450</td>
+                  <td class="n">$431</td>
+                  <td class="n">96%</td>
+                  <td class="n">10.0%</td>
+                  <td class="n">22%</td>
+                  <td class="n">72%</td></tr><tr class="tot">
+                  <th scope="row">Orlando overall</th>
+                  <td class="n">16</td>
+                  <td class="n">$24,832</td>
+                  <td class="n">3.0</td>
+                  <td class="n">$397</td>
+                  <td class="n">$517</td>
+                  <td class="n">130%</td>
+                  <td class="n">11.1%</td>
+                  <td class="n">65%</td>
+                  <td class="n">54%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><span class="mk down">▼</span> <b>Marvin Cisneros</b> — service call 10.0% vs own 2.1% (+7.9pp)</li></ul>
+              </div></details><details class="market">
+              <summary>
+                <span class="m-name">Miami</span>
+                <span class="m-rev">$7,019</span>
+                <span class="m-wow up">+13%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$877</b></div>
+                  <div><span>Completion</span><b>253%</b></div>
+                  <div><span>Jobs/tech day</span><b>2.00</b></div>
+                  <div><span>Service call</span><b>0.0%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row"><span class="mk down">▼</span> Chris Abreu</th>
+                  <td class="n">16</td>
+                  <td class="n">$20,694</td>
+                  <td class="n">2.1</td>
+                  <td class="n">$344</td>
+                  <td class="n">$627</td>
+                  <td class="n">182%</td>
+                  <td class="n">8.3%</td>
+                  <td class="n">73%</td>
+                  <td class="n">42%</td></tr><tr class="tot">
+                  <th scope="row">Miami overall</th>
+                  <td class="n">16</td>
+                  <td class="n">$20,694</td>
+                  <td class="n">2.1</td>
+                  <td class="n">$344</td>
+                  <td class="n">$627</td>
+                  <td class="n">182%</td>
+                  <td class="n">8.3%</td>
+                  <td class="n">73%</td>
+                  <td class="n">42%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><span class="mk down">▼</span> <b>Chris Abreu</b> — service call 8.3% vs own 1.5% (+6.8pp)</li></ul>
+              </div></details><details class="market">
+              <summary>
+                <span class="m-name">Louisville</span>
+                <span class="m-rev">$5,164</span>
+                <span class="m-wow down">-51%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$397</b></div>
+                  <div><span>Completion</span><b>143%</b></div>
+                  <div><span>Jobs/tech day</span><b>2.60</b></div>
+                  <div><span>Service call</span><b>7.1%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row"><span class="mk up">▲</span> Preston Holmes</th>
+                  <td class="n">18</td>
+                  <td class="n">$22,333</td>
+                  <td class="n">2.6</td>
+                  <td class="n">$372</td>
+                  <td class="n">$485</td>
+                  <td class="n">130%</td>
+                  <td class="n">9.8%</td>
+                  <td class="n">72%</td>
+                  <td class="n">51%</td></tr><tr class="tot">
+                  <th scope="row">Louisville overall</th>
+                  <td class="n">18</td>
+                  <td class="n">$22,333</td>
+                  <td class="n">2.6</td>
+                  <td class="n">$372</td>
+                  <td class="n">$485</td>
+                  <td class="n">130%</td>
+                  <td class="n">9.8%</td>
+                  <td class="n">72%</td>
+                  <td class="n">51%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><span class="mk up">▲</span> <b>Preston Holmes</b> — ticket $485 vs own $401 (+21%)</li></ul>
+              </div></details><details class="market">
+              <summary>
+                <span class="m-name">Tampa</span>
+                <span class="m-rev">$3,417</span>
+                <span class="m-wow down">-40%</span>
+              </summary>
+              <div class="m-body">
+                <div class="m-stats">
+                  <div><span>Ticket</span><b>$427</b></div>
+                  <div><span>Completion</span><b>114%</b></div>
+                  <div><span>Jobs/tech day</span><b>2.00</b></div>
+                  <div><span>Service call</span><b>0.0%</b></div>
+                </div>
+                <div class="scroll"><table class="tech">
+                  <thead><tr><th>Technician</th><th>Days</th><th>Revenue</th>
+                    <th>Jobs/day</th><th>Booked</th><th>Ticket</th><th>Compl.</th>
+                    <th>Svc call</th><th>Rotor</th><th>Eff.</th></tr></thead>
+                  <tbody><tr>
+                  <th scope="row">CB Berrians</th>
+                  <td class="n">13</td>
+                  <td class="n">$16,901</td>
+                  <td class="n">2.5</td>
+                  <td class="n">$424</td>
+                  <td class="n">$512</td>
+                  <td class="n">121%</td>
+                  <td class="n">5.7%</td>
+                  <td class="n">48%</td>
+                  <td class="n">46%</td></tr><tr>
+                  <th scope="row"><span class="mk down">▼</span> Kado Torres</th>
+                  <td class="n">12</td>
+                  <td class="n">$10,546</td>
+                  <td class="n">2.2</td>
+                  <td class="n">$429</td>
+                  <td class="n">$406</td>
+                  <td class="n">94%</td>
+                  <td class="n">7.1%</td>
+                  <td class="n">46%</td>
+                  <td class="n">42%</td></tr><tr class="tot">
+                  <th scope="row">Tampa overall</th>
+                  <td class="n">25</td>
+                  <td class="n">$27,446</td>
+                  <td class="n">2.4</td>
+                  <td class="n">$426</td>
+                  <td class="n">$465</td>
+                  <td class="n">109%</td>
+                  <td class="n">6.3%</td>
+                  <td class="n">47%</td>
+                  <td class="n">44%</td></tr></tbody></table></div>
+                <ul class="reasons"><li><span class="mk down">▼</span> <b>Kado Torres</b> — service call 7.1% vs own 0.0% (+7.1pp)</li></ul>
+              </div></details></section>
+
+  <h2 id="deck">The deck</h2>
+  <div class="deckbox"><figure class="slide"><img src="slides/slide-01.png" alt="Slide 1" loading="lazy" decoding="async" width="1467" height="825"><figcaption>1 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-02.png" alt="Slide 2" loading="lazy" decoding="async" width="1467" height="825"><figcaption>2 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-03.png" alt="Slide 3" loading="lazy" decoding="async" width="1467" height="825"><figcaption>3 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-04.png" alt="Slide 4" loading="lazy" decoding="async" width="1467" height="825"><figcaption>4 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-05.png" alt="Slide 5" loading="lazy" decoding="async" width="1467" height="825"><figcaption>5 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-06.png" alt="Slide 6" loading="lazy" decoding="async" width="1467" height="825"><figcaption>6 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-07.png" alt="Slide 7" loading="lazy" decoding="async" width="1467" height="825"><figcaption>7 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-08.png" alt="Slide 8" loading="lazy" decoding="async" width="1467" height="825"><figcaption>8 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-09.png" alt="Slide 9" loading="lazy" decoding="async" width="1467" height="825"><figcaption>9 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-10.png" alt="Slide 10" loading="lazy" decoding="async" width="1467" height="825"><figcaption>10 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-11.png" alt="Slide 11" loading="lazy" decoding="async" width="1467" height="825"><figcaption>11 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-12.png" alt="Slide 12" loading="lazy" decoding="async" width="1467" height="825"><figcaption>12 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-13.png" alt="Slide 13" loading="lazy" decoding="async" width="1467" height="825"><figcaption>13 / 14</figcaption></figure><figure class="slide"><img src="slides/slide-14.png" alt="Slide 14" loading="lazy" decoding="async" width="1467" height="825"><figcaption>14 / 14</figcaption></figure></div>
+  <p class="decknote">All 14 slides of this week's review, as presented. The
+    PowerPoint, <code>NuBrakes_OBR_2026-11-04.pptx</code>, is circulated separately.</p>
+
+  <footer>
+    Technician tables cover the trailing 4 weeks
+    (8 Oct–4 Nov);
+    a single week is too thin to rank a technician fairly.
+    <span class="mk up">▲</span> and <span class="mk down">▼</span> mark a move against
+    that technician's own prior 8 weeks, not a ranking against peers.
+    Rotor attach is measured on revenue-producing jobs. Generated 5 Nov 2026, 17:53.
+  </footer>
+</div>

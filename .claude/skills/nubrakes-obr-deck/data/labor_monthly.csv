@@ -1,0 +1,16 @@
+# Total labor by market by month, dollars. Source: EGP (ex Ad) Optimization Model,
+# financial_model tab, "Labor" panel (G/L basis — the P&L Cost of Sales / Labor line).
+# This is store/technician labor. Salaried ops-admin labor sits in Market G&A and SG&A
+# and is not separable in that model. Net sales denominator comes from the channel feed,
+# which matches the model's net sales to the dollar. Add a column each month after close.
+market,2026-06,2026-07,2026-08
+Dallas,51635,48462,48442
+Austin,21855,21790,30412
+Houston,26405,26726,32851
+San Antonio,10791,14117,11060
+Atlanta,33338,26817,27405
+Nashville,29295,26044,29968
+Orlando,16807,18624,13684
+Tampa,7696,8469,9875
+Miami,8765,9144,7833
+Louisville,9489,8062,8080
