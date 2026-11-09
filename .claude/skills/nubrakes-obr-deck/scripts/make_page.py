@@ -190,7 +190,7 @@ def build(skill_dir, out_dir):
                 marker = (t.get("self") or {}).get("marker")
                 trows.append(
                     f'<tr>\n                  <th scope="row">{mk(marker)}{E(name)}</th>\n'
-                    f'                  {cell(f"{t["days"]:.0f}")}\n'
+                    f'                  {cell(format(t["days"], ".0f"))}\n'
                     f'                  {cell(R.money(t["revenue"]))}\n'
                     f'                  {cell(R.num(t["jobs_per_day"], 1))}\n'
                     f'                  {cell(R.money(t["booked_ticket"]))}\n'
@@ -203,7 +203,7 @@ def build(skill_dir, out_dir):
             if tt:
                 trows.append(
                     f'<tr class="tot">\n                  <th scope="row">{E(k)} overall</th>\n'
-                    f'                  {cell(f"{tt["days"]:.0f}")}\n'
+                    f'                  {cell(format(tt["days"], ".0f"))}\n'
                     f'                  {cell(R.money(tt["revenue"]))}\n'
                     f'                  {cell(R.num(tt["jobs_per_day"], 1))}\n'
                     f'                  {cell(R.money(tt["booked_ticket"]))}\n'

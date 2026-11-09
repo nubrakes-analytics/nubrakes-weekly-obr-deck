@@ -93,7 +93,10 @@ Fired by a scheduled task Thursday morning.
    downloadable copy.
 5. **Report** to Slack `#weekly-obr-deck` (`C0CFJBLNRBQ`): the ops week covered,
    company revenue and week-over-week, technician efficiency (or which payroll week is
-   missing), and anything that broke, with the standing page link.
+   missing), and anything that broke, with the standing page link. Take the figures
+   from `python3 scripts/summary.py out/metrics.json`, never straight from
+   metrics.json: `company.tech_efficiency` there is the duration-field ratio (~166%)
+   that must never be shown.
 
 If the build fails, publish nothing and say plainly what broke. A silently stale or
 wrong deck is worse than a missed week.
